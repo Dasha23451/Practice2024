@@ -1,27 +1,13 @@
--- 1. Таблица "Rooms":
--- room_id
--- room_number
--- room_type
--- price_per_night
--- availability
-
 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Rooms')
 	CREATE TABLE Rooms (
 		room_id INT IDENTITY(1,1) NOT NULL,
 		room_number INT NOT NULL, 
 		room_type NVARCHAR(50) NOT NULL,
 		price_per_night INT NOT NULL,
-		availability INT NOT NULL,
+		availability BIT NOT NULL,
 
 		CONSTRAINT PK_rooms_room_id PRIMARY KEY (room_id)
 );
-
---2. Таблица "Customers":
--- customer_id
--- first_name
--- last_name
--- email
--- phone_number
 
 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Customers')
 	CREATE TABLE Customers (
@@ -33,14 +19,6 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Customers')
 
 		CONSTRAINT PK_Customers_customer_id PRIMARY KEY (customer_id)
 );
-
-
---3. Таблица "Bookings":
--- booking_id
--- customer_id
--- room_id
--- check_in_date
--- check_out_date
 
 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Bookings')
 	CREATE TABLE Bookings (
@@ -58,10 +36,6 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Bookings')
 			FOREIGN KEY (room_id) REFERENCES Rooms (room_id)
 );
 
---4. Таблица "Facilities":
--- facility_id
--- facility_name
-
 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Facilities')
 	CREATE TABLE Facilities (
 		facility_id INT IDENTITY(1,1) NOT NULL,
@@ -69,11 +43,6 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Facilities')
 
 		CONSTRAINT PK_Facilities_facility_id PRIMARY KEY (facility_id)
 );
-
---5. Таблица "RoomsToFacilities":
--- room_id
--- facility_id
-
 
 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='RoomsToFacilities')
 	CREATE TABLE RoomsToFacilities (
@@ -88,16 +57,17 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='RoomsToFacilities')
 			FOREIGN KEY (room_id) REFERENCES Rooms (room_id)
 );
 
--- Заполните таблицы данными, предполагая следующее:
+--Заполните таблицы данными, предполагая следующее:
 --  В таблице "Rooms" добавьте информацию о нескольких номерах разных типов (одноместные, двухместные и т. д.) 
 --  с разными ценами и доступностью.
 INSERT INTO Rooms (room_number, room_type, price_per_night, availability)
 VALUES
-	(10, 'single', 2400, 20),
-	(223, 'double', 3500, 15),
-	(15, 'standard', 2700, 30),
+	(10, 'single', 2400, 1),
+	(223, 'double', 3500, 0),
+	(15, 'standard', 2700, 0),
 	(204, 'studio', 5700, 0),
-	(100, 'suite', 6000, 5);
+	(100, 'suite', 6000, 0),
+	(150, 'suite', 8000, 1);
 
 -- В таблице "Customers" добавьте информацию о нескольких клиентах с их именами, электронными адресами и номерами телефонов.
 INSERT INTO Customers (first_name, last_name, email, phone_number)
@@ -115,7 +85,8 @@ VALUES
 	(1, 4, '2024-10-15', '2024-10-18'),
 	(2, 3, '2024-09-05', '2024-09-19'),
 	(2, 1, '2024-11-06', '2024-11-09'),
-	(2, 4, '2024-12-10', '2024-12-15');
+	(2, 4, '2024-12-10', '2024-12-15'),
+	(4, 6, '2024-07-11', '2024-07-23');
 
 -- В таблице "RoomFacilities" добавьте информацию о различных удобствах номеров (Wi-Fi, кондиционер, мини-бар и т. д.).
 INSERT INTO Facilities (facility_name)
@@ -139,7 +110,7 @@ VALUES
 -- Найдите все доступные номера для бронирования сегодня.
 SELECT * 
 	FROM Rooms
-	WHERE NOT availability = 0;
+	WHERE availability = 0;
 
 -- Найдите всех клиентов, чьи фамилии начинаются с буквы "S".
 SELECT * 
