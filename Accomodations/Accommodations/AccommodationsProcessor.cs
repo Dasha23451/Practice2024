@@ -39,24 +39,41 @@ public static class AccommodationsProcessor
     {
         string[] parts = input.Split( ' ' );
         string commandName = parts[ 0 ];
+        DateTime startDate;
+        DateTime endDate;
 
         switch ( commandName )
         {
             case "book":
+                //Вместо записи в консоль сделала выброс исключения
                 if ( parts.Length != 6 )
                 {
-                    Console.WriteLine( "Invalid number of arguments for booking." );
-                    return;
+                    throw new ArgumentException( "Invalid number of arguments for booking." );
                 }
 
-                CurrencyDto currency = ( CurrencyDto )Enum.Parse( typeof( CurrencyDto ), parts[ 5 ], true );
+
+                if ( !Enum.TryParse( parts[ 5 ], true, out CurrencyDto currency ) )
+                {
+                    throw new ArgumentException( $"Invalid currency {parts[ 5 ]}." );
+                }
+
+                // Добавила проверку даты на валидность
+                if ( !DateTime.TryParse( parts[ 3 ], out startDate ) )
+                {
+                    throw new ArgumentException( "Invalid start date format." );
+                }
+
+                if ( !DateTime.TryParse( parts[ 4 ], out endDate ) )
+                {
+                    throw new ArgumentException( "Invalid end date format." );
+                }
 
                 BookingDto bookingDto = new()
                 {
                     UserId = int.Parse( parts[ 1 ] ),
                     Category = parts[ 2 ],
-                    StartDate = DateTime.Parse( parts[ 3 ] ),
-                    EndDate = DateTime.Parse( parts[ 4 ] ),
+                    StartDate = startDate,
+                    EndDate = endDate,
                     Currency = currency,
                 };
 
@@ -67,13 +84,18 @@ public static class AccommodationsProcessor
                 break;
 
             case "cancel":
+                // Вместо записи в консоль сделала выброс исключения
                 if ( parts.Length != 2 )
                 {
-                    Console.WriteLine( "Invalid number of arguments for canceling." );
-                    return;
+                    throw new ArgumentException( "Invalid number of arguments for canceling." );
                 }
 
-                Guid bookingId = Guid.Parse( parts[ 1 ] );
+                // Добавила проверку id бронирования
+                if ( !Guid.TryParse( parts[ 1 ], out Guid bookingId ) )
+                {
+                    throw new ArgumentException( "Invalid number of arguments for canceling." );
+                }
+
                 CancelBookingCommand cancelCommand = new( _bookingService, bookingId );
                 cancelCommand.Execute();
                 _executedCommands.Add( ++s_commandIndex, cancelCommand );
@@ -81,6 +103,11 @@ public static class AccommodationsProcessor
                 break;
 
             case "undo":
+                // Добавила обработку ситуации, когда лист команд пуст
+                if ( _executedCommands.Count == 0 )
+                {
+                    throw new InvalidOperationException( "User command history is empty" );
+                }
                 _executedCommands[ s_commandIndex ].Undo();
                 _executedCommands.Remove( s_commandIndex );
                 s_commandIndex--;
@@ -88,10 +115,10 @@ public static class AccommodationsProcessor
 
                 break;
             case "find":
+                // Вместо записи в консоль сделала выброс исключения
                 if ( parts.Length != 2 )
                 {
-                    Console.WriteLine( "Invalid arguments for 'find'. Expected format: 'find <BookingId>'" );
-                    return;
+                    throw new ArgumentException( "Invalid arguments for 'find'. Expected format: 'find <BookingId>'" );
                 }
                 Guid id = Guid.Parse( parts[ 1 ] );
                 FindBookingByIdCommand findCommand = new( _bookingService, id );
@@ -99,13 +126,13 @@ public static class AccommodationsProcessor
                 break;
 
             case "search":
+                // Вместо записи в консоль сделала выброс исключения
                 if ( parts.Length != 4 )
                 {
-                    Console.WriteLine( "Invalid arguments for 'search'. Expected format: 'search <StartDate> <EndDate> <CategoryName>'" );
-                    return;
+                    throw new ArgumentException( "Invalid arguments for 'search'. Expected format: 'search <StartDate> <EndDate> <CategoryName>'" );
                 }
-                DateTime startDate = DateTime.Parse( parts[ 1 ] );
-                DateTime endDate = DateTime.Parse( parts[ 2 ] );
+                startDate = DateTime.Parse( parts[ 1 ] );
+                endDate = DateTime.Parse( parts[ 2 ] );
                 string categoryName = parts[ 3 ];
                 SearchBookingsCommand searchCommand = new( _bookingService, startDate, endDate, categoryName );
                 searchCommand.Execute();

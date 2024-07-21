@@ -28,6 +28,15 @@ public class BookingService : IBookingService
             throw new ArgumentException( "End date cannot be earlier than start date" );
         }
 
+        // Добавила проверку даты бронирования с днем бронирования (бронь нельзя сделать на число, которое уже прошло)
+
+        DateTime todayDate = DateTime.Today;
+
+        if ( startDate < todayDate )
+        {
+            throw new ArgumentException( "Start date cannot be earlier than today date" );
+        }
+
         RoomCategory? selectedCategory = _categories.FirstOrDefault( c => c.Name == categoryName );
         if ( selectedCategory == null )
         {
@@ -45,7 +54,13 @@ public class BookingService : IBookingService
             throw new ArgumentException( "User not found" );
         }
 
+        //  Убрала возможность бронирования номера меньше чем на сутки.
         int days = ( endDate - startDate ).Days;
+        if ( days == 0 )
+        {
+            throw new ArgumentException( "It is impossible to book a room for less than a day" );
+        }
+
         decimal currencyRate = GetCurrencyRate( currency );
         decimal totalCost = CalculateBookingCost( selectedCategory.BaseRate, days, userId, currencyRate );
 
@@ -85,7 +100,7 @@ public class BookingService : IBookingService
         category.AvailableRooms++;
     }
 
-    private static decimal CalculateDiscount( int userId )
+    private static decimal CalculateDiscount()
     {
         return 0.1m;
     }
@@ -101,7 +116,8 @@ public class BookingService : IBookingService
 
         query = query.Where( b => b.StartDate >= startDate );
 
-        query = query.Where( b => b.EndDate < endDate );
+        // Исправила сравнение для endDate. Иначе не учитывались брони с конечным числом равным endDate
+        query = query.Where( b => b.EndDate <= endDate );
 
         if ( !string.IsNullOrEmpty( categoryName ) )
         {
@@ -118,9 +134,17 @@ public class BookingService : IBookingService
             throw new ArgumentException( "Start date cannot be earlier than now date" );
         }
 
-        int daysBeforeArrival = ( DateTime.Now - booking.StartDate ).Days;
+        int daysBeforeArrival = ( booking.StartDate - DateTime.Now ).Days;
 
-        return 5000.0m / daysBeforeArrival;
+        // Исправила ситуацию, когда отмена брони на завтрашний день вызывала исключение
+        if ( daysBeforeArrival > 0 )
+        {
+            return 5000.0m / daysBeforeArrival;
+        }
+        else
+        {
+            return 5000.0m / 1;
+        }
     }
 
     private static decimal GetCurrencyRate( Currency currency )
@@ -139,8 +163,9 @@ public class BookingService : IBookingService
 
     private static decimal CalculateBookingCost( decimal baseRate, int days, int userId, decimal currencyRate )
     {
-        decimal cost = baseRate * days;
-        decimal totalCost = cost - cost * CalculateDiscount( userId ) * currencyRate;
+        // Исправила расчёт стоимости
+        decimal cost = baseRate * days / currencyRate;
+        decimal totalCost = cost - cost * CalculateDiscount();
         return totalCost;
     }
 }

@@ -7,9 +7,12 @@ public class FindBookingByIdCommand( IBookingService bookingService, Guid bookin
     public void Execute()
     {
         Booking? booking = bookingService.FindBookingById( bookingId );
-        Console.WriteLine( booking != null
-            ? $"Booking found: {booking.RoomCategory} for User {booking.UserId}"
-            : "Booking not found." );
+        //Вместо записи в консоль сделала выброс исключения
+        if ( booking != null )
+            // Исправила вывод категории
+            Console.WriteLine( $"Booking found: {booking.RoomCategory.Name} for User {booking.UserId}" );
+        else
+            throw new ArgumentException( "Booking not found." );
     }
 
     public void Undo()

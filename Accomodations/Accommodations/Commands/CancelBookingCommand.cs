@@ -17,7 +17,8 @@ public class CancelBookingCommand( IBookingService bookingService, Guid bookingI
         }
         else
         {
-            Console.WriteLine( $"Booking {bookingId} not found." );
+            // Вместо записи в консоль сделала выброс исключения
+            throw new ArgumentException( $"Booking {bookingId} not found." );
         }
     }
 
