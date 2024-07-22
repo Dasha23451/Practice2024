@@ -1,8 +1,7 @@
 ﻿using System.Text;
 
-class Program
+public class Program
 {
-
     static Dictionary<string, string> GetDict()
     {
         string filePath = "Dict.txt";
@@ -56,6 +55,10 @@ class Program
         {
             Console.WriteLine( "Данное слово отсутствует в словаре. Хотите его добавить? (y/n)" );
             string res = Console.ReadLine();
+            if ( !string.IsNullOrEmpty( res ) )
+            {
+                res = res.ToLower();
+            }
             if ( res == "y" )
             {
                 AddTranslate( dict, word );
@@ -72,7 +75,6 @@ class Program
     static void SaveNewDict( Dictionary<string, string> dict )
     {
         string path = "Dict.txt";
-
         using ( StreamWriter writer = new StreamWriter( path, false ) )
         {
             var sb = new StringBuilder();
@@ -95,7 +97,6 @@ class Program
     static void Main()
     {
         var dict = GetDict();
-
         bool isExit = true;
         while ( isExit )
         {
