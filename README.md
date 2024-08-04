@@ -1,0 +1,1 @@
+Ссылка на uml-диаграмму: https://www.figma.com/board/sozlw4wnT2EZzp0Tuej96Z/Untitled?node-id=22-959&t=jPGr67ZwcmxvHNrU-1
